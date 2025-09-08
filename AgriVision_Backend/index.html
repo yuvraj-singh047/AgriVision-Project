@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriVision - Plant Disease Detection</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f4f0; margin: 0; }
+        .container { text-align: center; background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; }
+        input[type="file"] { margin: 20px 0; }
+        #result { margin-top: 20px; font-size: 1.2em; font-weight: bold; color: #333; }
+        #preview { max-width: 300px; max-height: 300px; margin-top: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 AgriVision AI</h1>
+        <p>Upload an image of a plant leaf to detect diseases.</p>
+        <input type="file" id="imageUploader" accept="image/*">
+        <h2 id="result"></h2>
+        <img id="preview" src="" alt="Image preview"/>
+    </div>
+
+    <script>
+        const imageUploader = document.getElementById('imageUploader');
+        const resultDiv = document.getElementById('result');
+        const previewImg = document.getElementById('preview');
+
+        // IMPORTANT: Replace with your actual local IP address if testing on another device like a phone.
+        // For testing on the same computer, 'http://127.0.0.1:5000' is correct.
+        const backendUrl = 'http://127.0.0.1:5000/predict'; 
+
+        imageUploader.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Display a preview of the image
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Prepare data to send to backend
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            resultDiv.textContent = 'Analyzing...';
+
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Format the prediction for display
+                const diseaseName = data.prediction.replace(/___/g, ' - ').replace(/_/g, ' ');
+                resultDiv.textContent = `Detected: ${diseaseName}`;
+
+            } catch (error) {
+                console.error("Error:", error);
+                resultDiv.textContent = 'Error: Could not connect to the server.';
+            }
+        });
+    </script>
+</body>
+</html>
