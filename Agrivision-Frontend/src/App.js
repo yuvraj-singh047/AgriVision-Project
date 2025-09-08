@@ -12,18 +12,16 @@ const UploadIcon = () => (
 
 function App() {
   const [imagePreview, setImagePreview] = useState(null);
-  const [result, setResult] = useState(null); // Will store the full result object
+  const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Reset state
     setResult(null);
     setIsLoading(true);
 
-    // Show image preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result);
@@ -34,7 +32,8 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/predict', {
+      // ✅ Use your Render backend URL
+      const response = await fetch('https://agrivision-project.onrender.com/predict', {
         method: 'POST',
         body: formData,
       });
@@ -43,7 +42,6 @@ function App() {
 
       const data = await response.json();
       
-      // Simulate getting more data for the new design
       setResult({
         diseaseName: data.prediction.replace(/___/g, ' - ').replace(/_/g, ' '),
         confidence: "95.8%", // Placeholder
