@@ -1,0 +1,179 @@
+/* src/App.css - Lovable Design Implementation */
+
+/* Global styles */
+:root {
+  --primary-green: #2e7d32;
+  --light-green: #e8f5e9;
+  --dark-text: #333;
+  --light-text: #666;
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f4f6f8;
+}
+
+/* Main Layout */
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-header {
+  width: 100%;
+  background-color: white;
+  text-align: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.app-header h1 {
+  margin: 0;
+  color: var(--primary-green);
+  font-size: 1.8em;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 1200px;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Upload Section */
+.upload-section {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 550px;
+}
+
+.upload-section h2 {
+  margin-top: 0;
+  font-size: 2em;
+  color: var(--dark-text);
+}
+
+.upload-section p {
+  color: var(--light-text);
+  margin-bottom: 30px;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.upload-button {
+  background-color: var(--primary-green);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+  background-color: #388e3c;
+}
+
+/* Results Display */
+.results-container {
+  margin-top: 40px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.image-preview-card, .results-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.image-preview-card h3, .results-card h3 {
+  margin-top: 0;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  color: var(--dark-text);
+}
+
+.image-preview-card img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.disease-name {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: var(--primary-green);
+  margin: 0;
+}
+
+.confidence-score {
+  background-color: var(--light-green);
+  color: var(--primary-green);
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  margin-top: 15px;
+}
+
+.results-card h4 {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  color: var(--dark-text);
+}
+
+.recommendations {
+  color: var(--light-text);
+  line-height: 1.6;
+}
+
+.error-card {
+  border-left: 5px solid #d32f2f;
+}
+
+/* Loader Animation */
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid var(--primary-green);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-top: 40px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 900px) {
+  .results-container {
+    grid-template-columns: 1fr;
+  }
+}
