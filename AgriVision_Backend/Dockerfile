@@ -14,5 +14,5 @@ RUN pip install -r requirements.txt
 # Copy the rest of your project into the container
 COPY . .
 
-# Command to run your app
-CMD ["python", "app.py"]
+# Command to run your app with a production server (Gunicorn)
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"]
