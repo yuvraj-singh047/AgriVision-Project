@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from 'react';
 import './App.css'; // Make sure this is imported
 
@@ -12,7 +11,7 @@ const UploadIcon = () => (
 
 function App() {
   const [imagePreview, setImagePreview] = useState(null);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null); 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleImageChange = async (event) => {
@@ -32,7 +31,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      // ✅ Use your Render backend URL
+      // Make sure this URL points to your deployed backend or local server
       const response = await fetch('https://agrivision-project.onrender.com/predict', {
         method: 'POST',
         body: formData,
@@ -43,12 +42,12 @@ function App() {
       const data = await response.json();
       
       setResult({
-        diseaseName: data.prediction.replace(/___/g, ' - ').replace(/_/g, ' '),
-        confidence: "95.8%", // Placeholder
-        recommendations: "Remove infected leaves, ensure proper air circulation, and apply a copper-based fungicide as directed.", // Placeholder
+        diseaseName: data.prediction,
+        confidence: (data.confidence * 100).toFixed(1) + "%", // Format confidence
+        recommendations: data.recommendation,
       });
 
-    } catch (error) {
+    } catch (error) { // <-- This is the corrected line
       console.error("Error:", error);
       setResult({ error: "Could not connect to the server." });
     } finally {
@@ -110,3 +109,4 @@ function App() {
 }
 
 export default App;
+
