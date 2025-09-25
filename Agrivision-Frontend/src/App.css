@@ -52,7 +52,7 @@ body {
   background-color: white;
   padding: 40px;
   border-radius: 12px;
-  text-align: center;
+  text-align: centre;
   box-shadow: var(--shadow);
   width: 100%;
   max-width: 550px;
@@ -83,7 +83,7 @@ input[type="file"] {
   font-size: 1.1em;
   font-weight: bold;
   display: inline-flex;
-  align-items: center;
+  align-items: centre;
   gap: 10px;
   transition: background-color 0.3s ease;
 }
@@ -134,7 +134,7 @@ input[type="file"] {
   background-color: var(--light-green);
   color: var(--primary-green);
   display: inline-block;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.9em;
   margin-top: 15px;
@@ -157,7 +157,7 @@ input[type="file"] {
 
 /* Loader Animation */
 .loader {
-  border: 5px solid #f3f3f3;
+  border: 5px solid var(--light-green);
   border-top: 5px solid var(--primary-green);
   border-radius: 50%;
   width: 50px;
