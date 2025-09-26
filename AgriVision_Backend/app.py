@@ -1,6 +1,8 @@
 import os
 import io
 import numpy as np
+import google.generativeai as genai
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from keras.models import load_model
@@ -9,15 +11,31 @@ from PIL import Image
 # -----------------------------
 # Setup
 # -----------------------------
+load_dotenv() 
+
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 app = Flask(__name__)
 CORS(app)
 
-# Load the final trained model
+# --- Configure Google AI (Gemini) ---
+try:
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    # --- UPDATED: Use the correct, latest model name ---
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    print("✅ Google AI Gemini model configured successfully!")
+except Exception as e:
+    gemini_model = None
+    print(f"❌ WARNING: Could not configure Google AI. Chatbot will be disabled. Error: {e}")
+
+# Load the AgriVision model
 MODEL_PATH = os.path.join(BASE_DIR, 'agrivision_model_final.h5')
-model = load_model(MODEL_PATH)
-print("✅ Final model loaded successfully!")
+try:
+    model = load_model(MODEL_PATH)
+    print("✅ AgriVision model loaded successfully!")
+except Exception as e:
+    model = None
+    print(f"❌ FATAL ERROR: Could not load model from '{MODEL_PATH}'. Error: {e}")
 
 # Load the corresponding class names
 CLASS_NAMES_PATH = os.path.join(BASE_DIR, 'class_names.txt')
@@ -25,14 +43,12 @@ try:
     with open(CLASS_NAMES_PATH, 'r') as f:
         class_names = [line.strip() for line in f.readlines()]
     print(f"✅ Successfully loaded {len(class_names)} class names.")
-except FileNotFoundError:
+except Exception as e:
     class_names = []
-    print(f"❌ FATAL ERROR: '{CLASS_NAMES_PATH}' not found.")
+    print(f"❌ FATAL ERROR: Could not load class names from '{CLASS_NAMES_PATH}'. Error: {e}")
 
-# -----------------------------
-# COMPREHENSIVE: Treatment Recommendations Database
-# -----------------------------
-# This database now includes a specific entry for every disease class.
+# (Your treatment_database and prepare_image function would go here)
+# ...
 treatment_database = {
     "Apple___Apple_scab": "Treatment: Apply a fungicide containing Captan or a copper-based solution. Prune infected areas and ensure proper air circulation.",
     "Apple___Black_rot": "Treatment: Prune out cankered limbs and remove mummified fruit. Apply fungicides like Captan or Mancozeb starting from bud break.",
@@ -63,10 +79,6 @@ treatment_database = {
     "default": "Consult a local agricultural extension office for the most accurate and region-specific treatment advice."
 }
 
-
-# -----------------------------
-# Image Preprocessing
-# -----------------------------
 def prepare_image(image, target_size=(224, 224)):
     if image.mode != "RGB":
         image = image.convert("RGB")
@@ -75,14 +87,41 @@ def prepare_image(image, target_size=(224, 224)):
     image = np.expand_dims(image, axis=0)
     image = image / 255.0
     return image
+# -----------------------------
+# Chatbot Endpoint
+# -----------------------------
+@app.route('/chat', methods=['POST'])
+def chat():
+    if not gemini_model:
+        return jsonify({'error': 'Google AI service is not configured on the server.'}), 503
 
-# -----------------------------
-# Prediction Endpoint
-# -----------------------------
+    data = request.get_json()
+    user_message = data.get("message")
+
+    if not user_message:
+        return jsonify({'error': 'No message provided'}), 400
+
+    prompt = f"""
+    You are AgriBot, an expert AI assistant for farmers, specializing in plant health. 
+    Your tone is helpful, encouraging, and easy to understand.
+    A farmer has asked the following question: "{user_message}"
+    
+    Provide a concise and practical answer.
+    """
+    
+    try:
+        response = gemini_model.generate_content(prompt)
+        return jsonify({'reply': response.text})
+    except Exception as e:
+        print(f"❌ Error during Gemini API call: {e}")
+        return jsonify({'error': 'Failed to get a response from the AI assistant.'}), 500
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if not class_names:
         return jsonify({'error': 'Server error: Class names not loaded'}), 500
+    if model is None:
+        return jsonify({'error': 'Server error: Model not loaded'}), 500
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
     
@@ -98,16 +137,13 @@ def predict():
         predicted_class_index = int(np.argmax(prediction_array))
         predicted_class_name = class_names[predicted_class_index]
         
-        # --- RESTRUCTURED LOGIC ---
-        # Step 1: Handle special, non-disease cases first.
         if predicted_class_name == "Not_A_Leaf_Images":
             display_name = "Not a recognizable plant leaf"
             recommendation = "Please upload a clear image of a single plant leaf for diagnosis."
         elif "healthy" in predicted_class_name:
-            display_name = predicted_class_name.replace("___", " - ") # Format healthy name
+            display_name = predicted_class_name.replace("___", " - ")
             recommendation = "The plant appears healthy. No treatment is necessary. Continue standard care."
         else:
-            # Step 2: If it's a disease, look it up in the database.
             display_name = predicted_class_name.replace("___", " - ").replace("_", " ")
             recommendation = treatment_database.get(predicted_class_name, treatment_database["default"])
             
@@ -120,7 +156,6 @@ def predict():
     except Exception as e:
         print(f"❌ Error during prediction: {e}")
         return jsonify({'error': 'Failed to process image'}), 500
-
 # -----------------------------
 # Run App
 # -----------------------------
